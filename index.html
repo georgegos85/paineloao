@@ -1,531 +1,200 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Estratégico Regional - Março 2026</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Chosen Palette: Corporate Slate & Blue (Slate-50 to Slate-900, Blue-600 to Blue-800, Red-500 for alerts, Emerald-500 for positive metrics) -->
-    
-    <!-- Application Structure Plan: 
-    The SPA uses a Sidebar Navigation Dashboard structure. 
-    1. "Visão Executiva": High-level summary of Mar/26 impact and YoY historical shifts to immediately prove value.
-    2. "Pipeline & Contas": Interactive table to explore the R$ 5.8M pipeline, proving granular account management.
-    3. "Raio-X Regional": Thematic deep-dives (clickable state pills) to explain the nuanced channel crises in BA and PE, and opportunities in AL/SE.
-    4. "Gargalos & Operação": Highlights internal roadblocks (Logistics & Data) that destroy margin, pivoting to proposed solutions.
-    5. "Carreira & 1:1": The closing screen focused on the user's professional feedback and next steps.
-    This structure was chosen to guide the C-level conversation from "Here is my value" -> "Here are the threats" -> "Here are my solutions" -> "Let's talk about my career".
-    -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Estratégico 1:1</title>
 
-    <!-- Visualization & Content Choices: 
-    - Goal: Compare YoY Growth -> Viz: Bar Chart (Chart.js Canvas) -> Justification: Clearly shows AL/SE accelerating while BA stagnates.
-    - Goal: Show Mar/26 Proportions -> Viz: Doughnut Chart (Chart.js Canvas) -> Justification: Highlights PE and AL as the current main revenue drivers.
-    - Goal: Organize Pipeline -> Viz: Interactive HTML Table with JS filtering -> Justification: Allows quick lookup of specific accounts (e.g., Wi net) during the meeting.
-    - Goal: Diagnose Regions -> Viz: Interactive Tabbed Interface (HTML/JS) -> Justification: Avoids overwhelming the user with text; presents BA threats (ZTE) or PE channel issues (Nagem) only when clicked.
-    - Goal: NO SVG/Mermaid -> Used Unicode symbols (📊, ⚠️, 💡) and Tailwind CSS styling for all icons and visual indicators.
-    -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow: hidden; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Strict Chart Container Constraint */
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            height: 300px;
-            max-height: 350px;
-            margin: 0 auto;
-        }
-        @media (min-width: 1024px) {
-            .chart-container { height: 350px; }
-        }
-
-        .view-section { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .view-section.active { display: block; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .nav-item.active { background-color: #eff6ff; color: #1d4ed8; border-right: 4px solid #1d4ed8; font-weight: 600; }
-        
-        .region-tab.active { background-color: #1e3a8a; color: white; border-color: #1e3a8a; }
-    </style>
+<style>
+body { font-family: Inter, sans-serif; background:#f1f5f9; }
+.view { display:none; }
+.view.active { display:block; }
+.nav.active { background:#e0f2fe; }
+.badge { padding:4px 8px; border-radius:8px; font-size:12px; font-weight:600; }
+.green { background:#dcfce7; color:#166534; }
+.yellow { background:#fef9c3; color:#854d0e; }
+.red { background:#fee2e2; color:#991b1b; }
+</style>
 </head>
-<body class="flex h-screen w-full">
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col h-full shadow-sm z-10 flex-shrink-0">
-        <div class="p-6 border-b border-slate-100">
-            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Painel Gestão 1:1</h1>
-            <p class="text-xs text-slate-500 mt-1">Março 2026 • Nordeste</p>
-        </div>
-        <nav class="flex-1 py-4 overflow-y-auto">
-            <ul class="space-y-1">
-                <li><button onclick="switchView('dashboard', this)" class="nav-item active w-full text-left px-6 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors">&#128202; Visão Executiva</button></li>
-                <li><button onclick="switchView('pipeline', this)" class="nav-item w-full text-left px-6 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors">&#128178; Pipeline & Contas</button></li>
-                <li><button onclick="switchView('regions', this)" class="nav-item w-full text-left px-6 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors">&#128269; Raio-X Regional</button></li>
-                <li><button onclick="switchView('bottlenecks', this)" class="nav-item w-full text-left px-6 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors">&#9888;&#65039; Gargalos & Operação</button></li>
-                <li><button onclick="switchView('career', this)" class="nav-item w-full text-left px-6 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors">&#128188; Carreira & Alinhamento</button></li>
-            </ul>
-        </nav>
-        <div class="p-6 border-t border-slate-100 bg-slate-50">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-inner">GR</div>
-                <div>
-                    <p class="text-sm font-bold text-slate-800">Gestor Regional</p>
-                    <p class="text-xs text-slate-500">Diretoria Comercial</p>
-                </div>
-            </div>
-        </div>
-    </aside>
+<body class="flex h-screen">
 
-    <!-- Main Content -->
-    <main class="flex-1 h-full overflow-y-auto bg-slate-50 relative">
-        
-        <!-- VIEW 1: Dashboard (Visão Executiva) -->
-        <section id="view-dashboard" class="view-section active p-8 max-w-7xl mx-auto">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">Visão Executiva & Resultados</h2>
-                <p class="text-slate-500 mt-2 max-w-3xl">Esta secção demonstra o impacto imediato da nossa atuação em Março de 2026 e o cenário histórico que justifica a nossa mudança de foco tático (aceleração em AL/SE face à estagnação da BA).</p>
-            </div>
+<!-- SIDEBAR -->
+<div class="w-64 bg-white border-r p-4">
+<h1 class="text-xl font-bold mb-6">Painel 1:1</h1>
 
-            <!-- KPIs -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Volume de Negociações (Mar/26)</p>
-                    <p class="text-3xl font-bold text-blue-700">R$ 5,81M</p>
-                    <p class="text-xs text-emerald-600 mt-2 font-medium">&#10004; Com faturamento imediato prioritário</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Equipamentos Escoados</p>
-                    <p class="text-3xl font-bold text-slate-800">46.708 <span class="text-sm font-normal text-slate-500">un.</span></p>
-                    <p class="text-xs text-blue-600 mt-2 font-medium">&#10004; Alta tração em XC220G3 e Wi-Fi 6</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Crescimento YoY (Base 2025)</p>
-                    <p class="text-3xl font-bold text-emerald-600">+19% <span class="text-sm font-normal text-slate-500">Global</span></p>
-                    <p class="text-xs text-slate-500 mt-2 font-medium">Impulsionado por AL (+83%) e SE (+61%)</p>
-                </div>
-            </div>
+<div class="space-y-2">
+<button onclick="show('dashboard',this)" class="nav active w-full text-left p-2 rounded">Visão</button>
+<button onclick="show('pipeline',this)" class="nav w-full text-left p-2 rounded">Pipeline</button>
+<button onclick="show('ranking',this)" class="nav w-full text-left p-2 rounded">Ranking</button>
+<button onclick="show('raiox',this)" class="nav w-full text-left p-2 rounded">Raio-X</button>
+<button onclick="show('gargalos',this)" class="nav w-full text-left p-2 rounded">Gargalos</button>
+<button onclick="show('carreira',this)" class="nav w-full text-left p-2 rounded">Carreira</button>
+</div>
+</div>
 
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
-                    <h3 class="text-base font-bold text-slate-800 mb-4">Crescimento Regional: O Deslocamento do Eixo (24 vs 25)</h3>
-                    <div class="chart-container flex-1">
-                        <canvas id="yoyChart"></canvas>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-4 text-center">A Bahia, nosso maior mercado, estagnou (+9%). O crescimento acelerou nas praças adjacentes.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
-                    <h3 class="text-base font-bold text-slate-800 mb-4">Share de Faturamento: Pipeline Março/2026</h3>
-                    <div class="chart-container flex-1">
-                        <canvas id="shareChart"></canvas>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-4 text-center">Pernambuco e Alagoas representam a maior fatia da nossa geração de caixa recente.</p>
-                </div>
-            </div>
-        </section>
+<!-- MAIN -->
+<div class="flex-1 p-6 overflow-auto">
 
-        <!-- VIEW 2: Pipeline -->
-        <section id="view-pipeline" class="view-section p-8 max-w-7xl mx-auto">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">Pipeline Detalhado de Março</h2>
-                <p class="text-slate-500 mt-2 max-w-3xl">Exploração das contas ativas que geraram os R$ 5,8M. Utilize o filtro para visualizar o desempenho de faturamento direto e os modelos de alto valor acrescentado negociados por estado.</p>
-            </div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="view active">
+<h2 class="text-2xl font-bold mb-4">Visão Executiva</h2>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-700">Top Negociações Ativas</h3>
-                    <select id="stateFilter" onchange="filterTable()" class="text-sm border-slate-300 rounded-md shadow-sm p-2 bg-white text-slate-700 border focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="ALL">Todos os Estados</option>
-                        <option value="BA">Bahia (BA)</option>
-                        <option value="PE">Pernambuco (PE)</option>
-                        <option value="AL">Alagoas (AL)</option>
-                        <option value="SE">Sergipe (SE)</option>
-                    </select>
-                </div>
-                <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-100 sticky top-0 shadow-sm">
-                            <tr>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente (UF)</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Volume</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Modelos</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Faturamento</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status / Condição</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pipelineTableBody" class="text-sm divide-y divide-slate-100">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="p-4 bg-blue-50 border-t border-slate-200 text-xs text-blue-800 flex justify-between items-center">
-                    <span><strong>Nota:</strong> Clientes como a Tuxnet (BA) e Bdnet (PE) encontram-se travados devido a constrangimentos operacionais dos canais.</span>
-                    <span class="font-bold">Total Listado: R$ <span id="tableTotal"></span></span>
-                </div>
-            </div>
-        </section>
+<div class="grid grid-cols-3 gap-4 mb-6">
+<div class="bg-white p-4 rounded shadow">
+<p class="text-gray-500">Total</p>
+<p id="total" class="text-3xl font-bold text-blue-600"></p>
+</div>
 
-        <!-- VIEW 3: Raio-X Regional -->
-        <section id="view-regions" class="view-section p-8 max-w-7xl mx-auto">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">Raio-X de Canais e Inteligência de Mercado</h2>
-                <p class="text-slate-500 mt-2 max-w-3xl">Uma análise profunda dos obstáculos competitivos e das falhas de distribuição em cada estado. Selecione uma região abaixo para visualizar as ameaças mapeadas e a nossa estratégia de resposta.</p>
-            </div>
+<div class="bg-white p-4 rounded shadow">
+<p class="text-gray-500">Clientes</p>
+<p id="clientes" class="text-3xl font-bold"></p>
+</div>
 
-            <!-- Region Selectors -->
-            <div class="flex gap-4 mb-8">
-                <button onclick="selectRegion('BA', this)" class="region-tab active px-6 py-3 rounded-full border border-slate-300 font-bold text-sm transition-all shadow-sm">Bahia (BA)</button>
-                <button onclick="selectRegion('PE', this)" class="region-tab bg-white text-slate-600 px-6 py-3 rounded-full border border-slate-300 font-bold text-sm hover:bg-slate-50 transition-all shadow-sm">Pernambuco (PE)</button>
-                <button onclick="selectRegion('ALSE', this)" class="region-tab bg-white text-slate-600 px-6 py-3 rounded-full border border-slate-300 font-bold text-sm hover:bg-slate-50 transition-all shadow-sm">Alagoas & Sergipe</button>
-            </div>
+<div class="bg-white p-4 rounded shadow">
+<p class="text-gray-500">Ticket Médio</p>
+<p id="ticket" class="text-3xl font-bold"></p>
+</div>
+</div>
 
-            <!-- Dynamic Region Content -->
-            <div id="regionContent" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 min-h-[400px]">
-                <!-- Content populated by JS -->
-            </div>
-        </section>
+<div class="bg-white p-6 rounded shadow">
+<canvas id="chart"></canvas>
+</div>
+</div>
 
-        <!-- VIEW 4: Gargalos -->
-        <section id="view-bottlenecks" class="view-section p-8 max-w-7xl mx-auto">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">Gargalos Operacionais que Destroem Margem</h2>
-                <p class="text-slate-500 mt-2 max-w-3xl">A nossa dependência de distribuidores ineficientes resulta das graves falhas no nosso processo de Faturamento Direto e na ausência de inteligência de dados em tempo real.</p>
-            </div>
+<!-- PIPELINE -->
+<div id="pipeline" class="view">
+<h2 class="text-2xl font-bold mb-4">Pipeline</h2>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Col 1: Operação -->
-                <div class="bg-red-50 rounded-xl p-6 border border-red-100 flex flex-col">
-                    <h3 class="text-xl font-bold text-red-900 mb-6 flex items-center gap-2">&#128666; Logística & Atendimento Técnico</h3>
-                    <ul class="space-y-5 flex-1">
-                        <li class="bg-white p-4 rounded-lg shadow-sm border border-red-100">
-                            <strong class="text-slate-800 block text-sm">Atrasos Crónicos</strong>
-                            <span class="text-sm text-slate-600">O não cumprimento dos prazos de entrega combinados quebra a confiança das Key Accounts.</span>
-                        </li>
-                        <li class="bg-white p-4 rounded-lg shadow-sm border border-red-100">
-                            <strong class="text-slate-800 block text-sm">Ruptura na Conferência</strong>
-                            <span class="text-sm text-slate-600">Pedidos entregues com quantidades faltantes, exigindo retificações demoradas.</span>
-                        </li>
-                        <li class="bg-white p-4 rounded-lg shadow-sm border border-red-100 border-l-4 border-l-red-500">
-                            <strong class="text-slate-800 block text-sm">Falta de Rastreabilidade (Seriais GPON)</strong>
-                            <span class="text-sm text-slate-600">A falha no envio de bases de dados de seriais impede os provedores de provisionarem ativamente os equipamentos nas suas redes.</span>
-                        </li>
-                    </ul>
-                    <div class="mt-6 p-4 bg-red-900 text-white rounded-lg text-sm font-semibold">
-                        Impacto: Empurramos grandes clientes para os canais de distribuição, onde somos obrigados a conceder "Preços Especiais", reduzindo a nossa rentabilidade.
-                    </div>
-                </div>
+<table class="w-full bg-white rounded shadow text-sm">
+<thead>
+<tr class="border-b text-left">
+<th>Cliente</th>
+<th>Volume</th>
+<th>Modelo</th>
+<th>Total</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+</div>
 
-                <!-- Col 2: Dados -->
-                <div class="bg-amber-50 rounded-xl p-6 border border-amber-100 flex flex-col">
-                    <h3 class="text-xl font-bold text-amber-900 mb-6 flex items-center gap-2">&#128200; Visibilidade de Dados & Metas</h3>
-                    <ul class="space-y-5 flex-1">
-                        <li class="bg-white p-4 rounded-lg shadow-sm border border-amber-100">
-                            <strong class="text-slate-800 block text-sm">Escassez de Relatórios de Sell-out</strong>
-                            <span class="text-sm text-slate-600">A ausência de envios semanais retira-nos o poder de negociação na linha da frente com os clientes.</span>
-                        </li>
-                        <li class="bg-white p-4 rounded-lg shadow-sm border border-amber-100">
-                            <strong class="text-slate-800 block text-sm">Obscuridade nas Metas (Quarter)</strong>
-                            <span class="text-sm text-slate-600">Dificuldade em monitorizar com precisão o nosso faturamento exato e a percentagem de atingimento da meta em tempo real.</span>
-                        </li>
-                        <li class="bg-white p-4 rounded-lg shadow-sm border border-amber-100">
-                            <strong class="text-slate-800 block text-sm">Falta de Clareza nos KPIs</strong>
-                            <span class="text-sm text-slate-600">Ausência de explicações detalhadas sobre os cálculos matemáticos dos itens que compõem o nosso KPI mensal/trimestral.</span>
-                        </li>
-                    </ul>
-                    <div class="mt-6 p-4 bg-amber-900 text-white rounded-lg text-sm font-semibold">
-                        Solução Exigida: Implementação imediata de um Dashboard Operacional online e de um Workshop de alinhamento de KPIs.
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- RANKING -->
+<div id="ranking" class="view">
+<h2 class="text-2xl font-bold mb-4">Top Clientes</h2>
+<div id="rankingList" class="space-y-3"></div>
+</div>
 
-        <!-- VIEW 5: Carreira & 1:1 -->
-        <section id="view-career" class="view-section p-8 max-w-5xl mx-auto">
-            <div class="mb-10 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-700 text-3xl mb-4">&#128188;</div>
-                <h2 class="text-4xl font-bold text-slate-800">Desenvolvimento Profissional & Feedback</h2>
-                <p class="text-slate-500 mt-4 text-lg">Tópicos estruturados para alinhar a minha ambição de carreira com os objetivos estratégicos de longo prazo da companhia.</p>
-            </div>
+<!-- RAIO-X -->
+<div id="raiox" class="view">
+<h2 class="text-2xl font-bold mb-4">Raio-X Regional</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white p-4 rounded shadow">PE: maior concentração</div>
+<div class="bg-white p-4 rounded shadow">AL: crescimento sólido</div>
+<div class="bg-white p-4 rounded shadow">BA: risco operacional ⚠️</div>
+<div class="bg-white p-4 rounded shadow">SE: base menor</div>
+</div>
+</div>
 
-            <div class="space-y-6">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex gap-6 items-start hover:border-blue-400 transition-colors">
-                    <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl flex items-center justify-center flex-shrink-0">1</div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Avaliação de Impacto e Protagonismo</h3>
-                        <p class="text-slate-600">Face aos <strong>R$ 5,8 Milhões capturados</strong> neste ciclo e ao mapeamento granular da concorrência, como é que a diretoria avalia o meu impacto estratégico e a minha capacidade de execução no terreno?</p>
-                    </div>
-                </div>
+<!-- GARGALOS -->
+<div id="gargalos" class="view">
+<h2 class="text-2xl font-bold mb-4">Gargalos</h2>
+<ul class="bg-white p-4 rounded shadow space-y-2">
+<li>Dependência de parceiros (WDC / Dicomp)</li>
+<li>Concentração em grandes contas</li>
+<li>Execução BA</li>
+<li>Pipeline não convertido</li>
+</ul>
+</div>
 
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex gap-6 items-start hover:border-blue-400 transition-colors">
-                    <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl flex items-center justify-center flex-shrink-0">2</div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Aperfeiçoamento Tático e KPIs</h3>
-                        <p class="text-slate-600">Considerando os desafios expostos com os canais e o faturamento direto, em que competências de gestão, negociação ou análise devo focar para melhorar substancialmente a minha entrega no próximo trimestre?</p>
-                    </div>
-                </div>
+<!-- CARREIRA -->
+<div id="carreira" class="view">
+<h2 class="text-2xl font-bold mb-4">Carreira</h2>
+<ul class="bg-white p-4 rounded shadow space-y-2">
+<li>Evolução percebida</li>
+<li>Pontos de melhoria</li>
+<li>Próximos passos</li>
+</ul>
+</div>
 
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex gap-6 items-start hover:border-blue-400 transition-colors">
-                    <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl flex items-center justify-center flex-shrink-0">3</div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Roadmap e Perspectivas de Crescimento</h3>
-                        <p class="text-slate-600">Quais são as perspectivas e os novos níveis de responsabilidade que a empresa visualiza para o meu perfil, num cenário em que continuemos a escalar o domínio na região Nordeste?</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-12 text-center text-sm text-slate-400 font-medium">
-                Alinhamento Estratégico Comercial • Preparado para Revisão
-            </div>
-        </section>
+</div>
 
-    </main>
+<script>
 
-    <script>
-        // --- DATA STATE ---
-       const pipelineData = [
+// NAV
+function show(id,el){
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+document.querySelectorAll('.nav').forEach(v=>v.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+el.classList.add('active');
+}
 
-{ cliente: "BBG", volume: 4000, modelo: "XC220G3", total: 561840, status: "Fechado" },
-{ cliente: "Minas Telecom", volume: 5000, modelo: "XX530V", total: 529250, status: "Fechado" },
-{ cliente: "Marptek", volume: 3000, modelo: "XC220G3", total: 419700, status: "Fechado" },
-{ cliente: "Home Telecom", volume: 3000, modelo: "XC220G3", total: 419700, status: "Fechado" },
-{ cliente: "Prestek + Century", volume: 2700, modelo: "XC220G3", total: 410130, status: "Fechado" },
-
-{ cliente: "Dtel", volume: 11000, modelo: "XZ000-G6", total: 356025, status: "Fechado" },
-{ cliente: "JR Telecom", volume: 5000, modelo: "XZ000-G6", total: 237850, status: "Fechado" },
-
-{ cliente: "Vianet", volume: 1300, modelo: "EX521 + XC220G3", total: 222700, status: "Fechado" },
-{ cliente: "Turbonet", volume: 1308, modelo: "XC220G3 + XX530V", total: 221893, status: "Fechado" },
-{ cliente: "Power Telecom", volume: 2100, modelo: "Mix", total: 221500, status: "Fechado" },
-
-{ cliente: "Avanza", volume: 1000, modelo: "XX530V", total: 219900, status: "Fechado" },
-{ cliente: "Lagenet", volume: 1000, modelo: "XX530V", total: 209000, status: "Fechado" },
-
-{ cliente: "Planoweb", volume: 1450, modelo: "XC220G3 + EX141", total: 198770, status: "Fechado" },
-{ cliente: "TN Provedor", volume: 1000, modelo: "XC220G3", total: 159000, status: "Fechado" },
-
-// 🔴 RISCO
-{ cliente: "Tuxnet", volume: 2000, modelo: "XC220G3", total: 0, status: "Risco" },
-
-// 🟡 PIPELINE
-{ cliente: "Go Internet", volume: 2600, modelo: "XC220G3", total: 0, status: "Pipeline" },
-{ cliente: "Unicom", volume: 500, modelo: "XC220G3", total: 0, status: "Pipeline" },
-{ cliente: "Solon", volume: 1000, modelo: "XZ000-G6", total: 0, status: "Pipeline" },
-{ cliente: "ATEL", volume: 3000, modelo: "XZ000-G6", total: 0, status: "Pipeline" },
-{ cliente: "Oops", volume: 1000, modelo: "EC220", total: 0, status: "Pipeline" },
-{ cliente: "Dianet", volume: 300, modelo: "XC220G3", total: 0, status: "Pipeline" },
-{ cliente: "PGF", volume: 1000, modelo: "XC220G3", total: 0, status: "Pipeline" },
-{ cliente: "Rupi", volume: 600, modelo: "XC220G3", total: 0, status: "Pipeline" },
-{ cliente: "Ficarnet", volume: 200, modelo: "XC220G3 + EC220", total: 0, status: "Pipeline" },
-{ cliente: "Lignet", volume: 1000, modelo: "XX530V", total: 0, status: "Pipeline" },
-{ cliente: "TCNET", volume: 1000, modelo: "XX530V", total: 0, status: "Pipeline" }
-
+// DATA
+const data = [
+{c:"BBG",v:4000,m:"XC220G3",t:561840,s:"green"},
+{c:"Minas Telecom",v:5000,m:"XX530V",t:529250,s:"green"},
+{c:"Marptek",v:3000,m:"XC220G3",t:419700,s:"green"},
+{c:"Home Telecom",v:3000,m:"XC220G3",t:419700,s:"green"},
+{c:"Prestek + Century",v:2700,m:"XC220G3",t:410130,s:"green"},
+{c:"Dtel",v:11000,m:"XZ000-G6",t:356025,s:"green"},
+{c:"JR Telecom",v:5000,m:"XZ000-G6",t:237850,s:"green"},
+{c:"Vianet",v:1300,m:"EX521 + XC220G3",t:222700,s:"green"},
+{c:"Turbonet",v:1308,m:"XC220G3 + XX530V",t:221893,s:"green"},
+{c:"Power Telecom",v:2100,m:"Mix",t:221500,s:"green"},
+{c:"Avanza",v:1000,m:"XX530V",t:219900,s:"green"},
+{c:"Lagenet",v:1000,m:"XX530V",t:209000,s:"green"},
+{c:"Planoweb",v:1450,m:"XC220G3 + EX141",t:198770,s:"green"},
+{c:"TN Provedor",v:1000,m:"XC220G3",t:159000,s:"green"},
+{c:"Tuxnet",v:2000,m:"XC220G3",t:0,s:"red"},
+{c:"Go Internet",v:2600,m:"XC220G3",t:0,s:"yellow"}
 ];
 
-        const regionInsights = {
-            'BA': {
-                title: 'Bahia (BA): Guerra de Preços e Ameaça Direta',
-                threats: [
-                    { t: 'Perda de Key Accounts', desc: 'Holística e Tuxnet travadas; faturamento interrompido pela ação incisiva da concorrência.' },
-                    { t: 'Canais Inimigos em Casa', desc: 'WDC e Filadélfia, embora tragam volume, estão a promover fortemente Huawei, Grandstream e Zyxel no nosso portefólio.' },
-                    { t: 'Desposicionamento da H2i', desc: 'Preços de Sell-in inviabilizam a competitividade do canal H2i face à concorrência interna.' },
-                    { t: 'Ofensiva Agressiva da ZTE', desc: 'Contratação de um executivo regional residente em Feira de Santana. Estão a abater as nossas propostas com o router AX3000 em modelo de Faturamento Direto (sem margens de canal).' }
-                ],
-                action: 'Revisão urgente de políticas de Sell-in (H2i) e criação de pacotes defensivos diretos para combater a ZTE.'
-            },
-            'PE': {
-                title: 'Pernambuco (PE): A Falência da Distribuição Local',
-                threats: [
-                    { t: 'NAGEM: Operação Paralisada', desc: 'O distribuidor que cresceu 200% em 2025 encontra-se sem stock de Curva A e com faturamento nulo na região.' },
-                    { t: 'GMI: Risco de Crédito (Overdue)', desc: 'Bloqueios financeiros constantes impedem o abastecimento do canal, causando ruptura severa de XC220G3.' },
-                    { t: 'Comercial Brasil', desc: 'Preços altamente descolados da realidade local e indisponibilidade de equipamentos prioritários.' },
-                    { t: 'Dependência de Risco', desc: 'O crescimento atual baseia-se exclusivamente em Faturamento Direto (Dtel) e projetos WDC (BBG).' }
-                ],
-                action: 'Implementação de "Fast Track VIP" para as Key Accounts no Direto, a fim de proteger a margem e evitar perdas por falta de canal local.'
-            },
-            'ALSE': {
-                title: 'Alagoas & Sergipe: A Fronteira do Crescimento',
-                threats: [
-                    { t: 'Vácuo de Atendimento Local', desc: 'Crescimento de 83% e 61%, respetivamente, impulsionado organicamente sem o apoio formal de um distribuidor regional dedicado.' },
-                    { t: 'Risco de Ruptura', desc: 'A dependência de canais distantes ou de faturamento direto lento pode refrear o atual "momentum" do mercado.' }
-                ],
-                action: 'Aprovação e homologação imediata da RAMTEC como distribuidor focado, assegurando a blindagem de mercado em AL/SE.'
-            }
-        };
+// TOTAL
+let total = data.reduce((a,b)=>a+b.t,0);
+document.getElementById("total").innerText="R$ "+total.toLocaleString();
+document.getElementById("clientes").innerText=data.length;
+document.getElementById("ticket").innerText="R$ "+Math.round(total/data.length).toLocaleString();
 
-        // --- NAVIGATION LOGIC ---
-        function switchView(viewId, btnElement) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById('view-' + viewId).classList.add('active');
-            btnElement.classList.add('active');
+// TABLE
+const table=document.getElementById("table");
+data.forEach(d=>{
+table.innerHTML+=`
+<tr class="border-b">
+<td>${d.c}</td>
+<td>${d.v}</td>
+<td>${d.m}</td>
+<td>R$ ${d.t}</td>
+<td><span class="badge ${d.s}">${d.s}</span></td>
+</tr>
+`;
+});
 
-            if(viewId === 'pipeline' && !window.pipelineLoaded) { populateTable(); window.pipelineLoaded = true; }
-        }
+// RANKING
+const ranking=[...data].sort((a,b)=>b.t-a.t).slice(0,5);
+const rl=document.getElementById("rankingList");
 
-        // --- PIPELINE TABLE LOGIC ---
-        function formatCurrency(val) { return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-        
-        function populateTable(filter = 'ALL') {
-            const tbody = document.getElementById('pipelineTableBody');
-            tbody.innerHTML = '';
-            let total = 0;
+ranking.forEach(r=>{
+rl.innerHTML+=`
+<div class="bg-white p-4 rounded shadow flex justify-between">
+<span>${r.c}</span>
+<strong>R$ ${r.t}</strong>
+</div>`;
+});
 
-            const filteredData = pipelineData.filter(d => filter === 'ALL' || d.uf === filter);
+// CHART
+new Chart(document.getElementById('chart'),{
+type:'doughnut',
+data:{
+labels:['PE','AL','BA','SE'],
+datasets:[{data:[38,31,20,11]}]
+}
+});
 
-            filteredData.forEach(d => {
-                total += d.total;
-                const isBA = d.uf === 'BA';
-                const row = `
-                    <tr class="hover:bg-blue-50/30 transition-colors ${isBA ? 'bg-orange-50/20' : ''}">
-                        <td class="p-4">
-                            <span class="font-bold text-slate-800">${d.cliente}</span>
-                            ${isBA ? '<span class="ml-2 px-2 py-0.5 rounded text-[10px] bg-orange-100 text-orange-700 font-bold">ALERTA BA</span>' : ''}
-                        </td>
-                        <td class="p-4 text-slate-600">${d.vol.toLocaleString('pt-BR')} un.</td>
-                        <td class="p-4 text-slate-600"><span class="px-2 py-1 bg-slate-100 rounded text-xs font-medium border border-slate-200">${d.modelo}</span></td>
-                        <td class="p-4 font-mono font-bold text-blue-700 text-right">R$ ${formatCurrency(d.total)}</td>
-                        <td class="p-4 text-xs text-slate-500 italic">${d.cond}</td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
+</script>
 
-            document.getElementById('tableTotal').innerText = formatCurrency(total);
-        }
-
-        function filterTable() {
-            const val = document.getElementById('stateFilter').value;
-            populateTable(val);
-        }
-
-        // --- REGIONS LOGIC ---
-        function selectRegion(regionKey, btnElement) {
-            document.querySelectorAll('.region-tab').forEach(el => {
-                el.classList.remove('active', 'bg-blue-900', 'text-white');
-                el.classList.add('bg-white', 'text-slate-600');
-            });
-            btnElement.classList.remove('bg-white', 'text-slate-600');
-            btnElement.classList.add('active', 'bg-blue-900', 'text-white');
-
-            const data = regionInsights[regionKey];
-            const contentDiv = document.getElementById('regionContent');
-            
-            let threatsHtml = data.threats.map(t => `
-                <div class="flex gap-4">
-                    <div class="w-1 bg-red-500 rounded flex-shrink-0"></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">${t.t}</h4>
-                        <p class="text-sm text-slate-600 mt-1">${t.desc}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            contentDiv.innerHTML = `
-                <h3 class="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">${data.title}</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div class="space-y-6">${threatsHtml}</div>
-                    <div class="bg-slate-50 border border-slate-200 p-6 rounded-xl flex flex-col justify-center">
-                        <div class="mb-4 text-emerald-600">&#128161; <strong>Ação Estratégica Proposta</strong></div>
-                        <p class="text-slate-700 italic font-medium leading-relaxed">${data.action}</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- INIT CHARTS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Setup Chart.js defaults
-            Chart.defaults.font.family = "'Inter', sans-serif";
-            Chart.defaults.color = '#64748b';
-            
-            // 1. YoY Growth Bar Chart
-            const ctxYoy = document.getElementById('yoyChart').getContext('2d');
-            new Chart(ctxYoy, {
-                type: 'bar',
-                data: {
-                    labels: ['Alagoas (AL)', 'Sergipe (SE)', 'Pernambuco (PE)', 'Bahia (BA)'],
-                    datasets: [{
-                        label: 'Crescimento 2025 vs 2024 (%)',
-                        data: [83, 61, 28, 9],
-                        backgroundColor: [
-                            'rgba(16, 185, 129, 0.8)', // Emerald
-                            'rgba(16, 185, 129, 0.8)', // Emerald
-                            'rgba(59, 130, 246, 0.8)', // Blue
-                            'rgba(148, 163, 184, 0.8)'  // Slate
-                        ],
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { 
-                            callbacks: { label: (ctx) => `${ctx.raw}% de crescimento` },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            padding: 12
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
-                        x: { grid: { display: false }, border: { display: false } }
-                    }
-                }
-            });
-
-            // 2. Share Março 26 Doughnut Chart
-            const ctxShare = document.getElementById('shareChart').getContext('2d');
-            new Chart(ctxShare, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Pernambuco (PE)', 'Alagoas (AL)', 'Bahia (BA)', 'Sergipe (SE)'],
-                    datasets: [{
-                        data: [37.7, 31.0, 20.3, 11.0],
-                        backgroundColor: ['#1e3a8a', '#3b82f6', '#93c5fd', '#e0f2fe'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff',
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: { position: 'right', labels: { boxWidth: 12, padding: 15, font: { weight: 'bold' } } },
-                        tooltip: { 
-                            callbacks: { label: (ctx) => ` R$ ${(ctx.raw * 5.81 / 100).toFixed(2)}M (${ctx.raw}%)` },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            padding: 12
-                        }
-                    }
-                }
-            });
-
-            // Init Regions view with BA
-            selectRegion('BA', document.querySelector('.region-tab.active'));
-        });
-    </script>
 </body>
 </html>
