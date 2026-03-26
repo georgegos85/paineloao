@@ -300,24 +300,44 @@
 
     <script>
         // --- DATA STATE ---
-        const pipelineData = [
-            { cliente: "BBG (PE)", vol: 4000, modelo: "XC220G3", total: 561840, cond: "Integral Mar", uf: "PE" },
-            { cliente: "Minas Telecom (SE)", vol: 2500, modelo: "XX530V", total: 529250, cond: "Parcelado (3x)", uf: "SE" },
-            { cliente: "Marptek (AL)", vol: 3000, modelo: "XC220G3", total: 419700, cond: "3x (M/A/M)", uf: "AL" },
-            { cliente: "Home Telecom (PE)", vol: 3000, modelo: "XC220G3", total: 419700, cond: "3x (M/A/M)", uf: "PE" },
-            { cliente: "Prestek + Century (AL)", vol: 2700, modelo: "XC220G3", total: 410130, cond: "3x (M/A/M)", uf: "AL" },
-            { cliente: "Dtel (PE)", vol: 7500, modelo: "XZ000-G6", total: 356025, cond: "Integral Mar", uf: "PE" },
-            { cliente: "JR Telecom (PE)", vol: 5000, modelo: "XZ000-G6", total: 237850, cond: "Integral Mar", uf: "PE" },
-            { cliente: "Wi net (BA)", vol: 1200, modelo: "XX530V", total: 251880, cond: "Integral Mar", uf: "BA" },
-            { cliente: "VIANET (BA)", vol: 1300, modelo: "EX521/XC220", total: 222700, cond: "Integral Mar", uf: "BA" },
-            { cliente: "Turbonet (BA)", vol: 1308, modelo: "Mix", total: 221893, cond: "Via WDC", uf: "BA" },
-            { cliente: "Power Telecom (BA)", vol: 1100, modelo: "Mix", total: 221500, cond: "Integral Mar", uf: "BA" },
-            { cliente: "Avanza (BA)", vol: 1000, modelo: "XX530V", total: 219900, cond: "Integral Mar", uf: "BA" },
-            { cliente: "Lagenet (AL)", vol: 1000, modelo: "XX530V", total: 209000, cond: "Integral Mar", uf: "AL" },
-            { cliente: "Planoweb (BA)", vol: 1300, modelo: "XC220G3", total: 198770, cond: "Via WDC", uf: "BA" },
-            { cliente: "TN Provedor (PE)", vol: 1000, modelo: "XC220G3", total: 159000, cond: "Integral Mar", uf: "PE" },
-            { cliente: "Tuxnet (BA)", vol: 2000, modelo: "XC220G3", total: 0, cond: "Pendente/Risco", uf: "BA" },
-        ];
+       const pipelineData = [
+
+{ cliente: "BBG", volume: 4000, modelo: "XC220G3", total: 561840, status: "Fechado" },
+{ cliente: "Minas Telecom", volume: 5000, modelo: "XX530V", total: 529250, status: "Fechado" },
+{ cliente: "Marptek", volume: 3000, modelo: "XC220G3", total: 419700, status: "Fechado" },
+{ cliente: "Home Telecom", volume: 3000, modelo: "XC220G3", total: 419700, status: "Fechado" },
+{ cliente: "Prestek + Century", volume: 2700, modelo: "XC220G3", total: 410130, status: "Fechado" },
+
+{ cliente: "Dtel", volume: 11000, modelo: "XZ000-G6", total: 356025, status: "Fechado" },
+{ cliente: "JR Telecom", volume: 5000, modelo: "XZ000-G6", total: 237850, status: "Fechado" },
+
+{ cliente: "Vianet", volume: 1300, modelo: "EX521 + XC220G3", total: 222700, status: "Fechado" },
+{ cliente: "Turbonet", volume: 1308, modelo: "XC220G3 + XX530V", total: 221893, status: "Fechado" },
+{ cliente: "Power Telecom", volume: 2100, modelo: "Mix", total: 221500, status: "Fechado" },
+
+{ cliente: "Avanza", volume: 1000, modelo: "XX530V", total: 219900, status: "Fechado" },
+{ cliente: "Lagenet", volume: 1000, modelo: "XX530V", total: 209000, status: "Fechado" },
+
+{ cliente: "Planoweb", volume: 1450, modelo: "XC220G3 + EX141", total: 198770, status: "Fechado" },
+{ cliente: "TN Provedor", volume: 1000, modelo: "XC220G3", total: 159000, status: "Fechado" },
+
+// 🔴 RISCO
+{ cliente: "Tuxnet", volume: 2000, modelo: "XC220G3", total: 0, status: "Risco" },
+
+// 🟡 PIPELINE
+{ cliente: "Go Internet", volume: 2600, modelo: "XC220G3", total: 0, status: "Pipeline" },
+{ cliente: "Unicom", volume: 500, modelo: "XC220G3", total: 0, status: "Pipeline" },
+{ cliente: "Solon", volume: 1000, modelo: "XZ000-G6", total: 0, status: "Pipeline" },
+{ cliente: "ATEL", volume: 3000, modelo: "XZ000-G6", total: 0, status: "Pipeline" },
+{ cliente: "Oops", volume: 1000, modelo: "EC220", total: 0, status: "Pipeline" },
+{ cliente: "Dianet", volume: 300, modelo: "XC220G3", total: 0, status: "Pipeline" },
+{ cliente: "PGF", volume: 1000, modelo: "XC220G3", total: 0, status: "Pipeline" },
+{ cliente: "Rupi", volume: 600, modelo: "XC220G3", total: 0, status: "Pipeline" },
+{ cliente: "Ficarnet", volume: 200, modelo: "XC220G3 + EC220", total: 0, status: "Pipeline" },
+{ cliente: "Lignet", volume: 1000, modelo: "XX530V", total: 0, status: "Pipeline" },
+{ cliente: "TCNET", volume: 1000, modelo: "XX530V", total: 0, status: "Pipeline" }
+
+];
 
         const regionInsights = {
             'BA': {
