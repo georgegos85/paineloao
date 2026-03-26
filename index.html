@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Estratégico Regional - Março 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .nav-item.active { background-color: #eff6ff; color: #1d4ed8; }
+    </style>
+</head>
+<body class="flex h-screen">
+
+<aside class="w-64 bg-white border-r">
+    <div class="p-4 font-bold">Painel 1:1</div>
+    <button onclick="switchView('pipeline', this)" class="nav-item active p-2 w-full text-left">Pipeline</button>
+</aside>
+
+<main class="flex-1 p-6">
+
+<section id="view-pipeline" class="view-section active">
+    <h2 class="text-2xl font-bold mb-4">Pipeline Atualizado</h2>
+
+    <table class="w-full text-sm border">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="p-2">Cliente</th>
+                <th>Volume</th>
+                <th>Modelo</th>
+                <th>Total</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</section>
+
+</main>
+
+<script>
+const pipelineData = [
+            { cliente: "BBG (PE)", vol: 4000, modelo: "XC220G3", total: 561840, cond: "Integral Mar", uf: "PE" },
+            { cliente: "Minas Telecom (SE)", vol: 5000, modelo: "XX530V", total: 1045000, cond: "Atualizado (Dicomp)", uf: "SE" },
+            { cliente: "Marptek (AL)", vol: 3000, modelo: "XC220G3", total: 419700, cond: "3x (M/A/M)", uf: "AL" },
+            { cliente: "Home Telecom (PE)", vol: 3000, modelo: "XC220G3", total: 419700, cond: "3x (M/A/M)", uf: "PE" },
+            { cliente: "Prestek + Century (AL)", vol: 2700, modelo: "XC220G3", total: 410130, cond: "3x (M/A/M)", uf: "AL" },
+            { cliente: "Dtel (PE)", vol: 11000, modelo: "XZ000-G6", total: 770000, cond: "Atualizado", uf: "PE" },
+            { cliente: "JR Telecom (PE)", vol: 5000, modelo: "XZ000-G6", total: 237850, cond: "Integral Mar", uf: "PE" },
+            { cliente: "Wi net (BA)", vol: 1200, modelo: "XX530V", total: 251880, cond: "Integral Mar", uf: "BA" },
+            { cliente: "VIANET (BA)", vol: 1300, modelo: "EX521 + XC220G3", total: 222700, cond: "Integral Mar", uf: "BA" },
+            { cliente: "Turbonet (BA)", vol: 1308, modelo: "XC220G3 + XX530V", total: 221893, cond: "Via WDC", uf: "BA" },
+            { cliente: "Power Telecom (BA)", vol: 2100, modelo: "XC220G3 + XX530V + EC220", total: 334000, cond: "Atualizado", uf: "BA" },
+            { cliente: "Avanza (BA)", vol: 1000, modelo: "XX530V", total: 219900, cond: "6x", uf: "BA" },
+            { cliente: "Lagenet (AL)", vol: 1000, modelo: "XX530V", total: 209000, cond: "Integral Mar", uf: "AL" },
+            { cliente: "Planoweb (BA)", vol: 1450, modelo: "XC220G3 + EX141", total: 220000, cond: "Via WDC", uf: "BA" },
+            { cliente: "TN Provedor (PE)", vol: 1000, modelo: "XC220G3", total: 159000, cond: "Integral Mar", uf: "PE" },
+            { cliente: "Tuxnet (BA)", vol: 2000, modelo: "XC220G3", total: 0, cond: "Negociação WDC", uf: "BA" },
+
+            // Novos adicionados
+            { cliente: "Unicom (SE)", vol: 500, modelo: "XC220G3", total: 79500, cond: "Novo", uf: "SE" },
+            { cliente: "Solon (AL)", vol: 1000, modelo: "XZ000-G6", total: 70000, cond: "Novo", uf: "AL" },
+            { cliente: "ATEL (AL)", vol: 3000, modelo: "XZ000-G6", total: 210000, cond: "Novo", uf: "AL" },
+            { cliente: "Oops (PE)", vol: 1000, modelo: "EC220", total: 120000, cond: "Novo", uf: "PE" },
+            { cliente: "Dianet (PE)", vol: 300, modelo: "XC220G3", total: 47700, cond: "Novo", uf: "PE" },
+            { cliente: "PGF (PE)", vol: 1000, modelo: "XC220G3", total: 159000, cond: "Novo", uf: "PE" },
+            { cliente: "Rupi (PE)", vol: 600, modelo: "XC220G3", total: 95400, cond: "Novo", uf: "PE" },
+            { cliente: "Infoartes (BA)", vol: 250, modelo: "XX530V", total: 55000, cond: "Novo", uf: "BA" },
+            { cliente: "Zohnet (BA)", vol: 100, modelo: "XX530V", total: 21990, cond: "Novo", uf: "BA" },
+            { cliente: "Teleinfor (BA)", vol: 100, modelo: "XX530V", total: 21990, cond: "Novo", uf: "BA" },
+            { cliente: "Naveg+ (BA)", vol: 100, modelo: "XX530V", total: 21990, cond: "Novo", uf: "BA" },
+            { cliente: "Ssinfor (PE)", vol: 150, modelo: "EC220", total: 18000, cond: "Novo", uf: "PE" },
+            { cliente: "Ficarnet (PE)", vol: 200, modelo: "XC220G3 + EC220", total: 30000, cond: "Novo", uf: "PE" },
+            { cliente: "Lignet (AL)", vol: 1000, modelo: "XX530V", total: 209000, cond: "Novo", uf: "AL" },
+            { cliente: "TCNET (AL)", vol: 1000, modelo: "XX530V", total: 209000, cond: "Novo", uf: "AL" },
+            { cliente: "Go Internet (BA)", vol: 2600, modelo: "XC220G3", total: 413400, cond: "WDC (avaliando)", uf: "BA" }
+        ];
+
+function render(){
+const tbody = document.getElementById('tbody');
+pipelineData.forEach(d=>{
+    tbody.innerHTML += `<tr>
+        <td class="p-2">${d.cliente}</td>
+        <td>${d.vol}</td>
+        <td>${d.modelo}</td>
+        <td>R$ ${d.total}</td>
+        <td>${d.cond}</td>
+    </tr>`
+})
+}
+render();
+</script>
+
+</body>
+</html>
